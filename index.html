@@ -2,408 +2,210 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CFO Bot — Chat</title>
-  <meta name="description" content="CFO Bot — ask about the Global Financial Architecture assignment" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CFO Bot</title>
+
   <style>
-    :root{
-      --bg:#0f1724;
-      --card:#0b1220;
-      --muted:#9aa4b2;
-      --accent:#4f46e5;
-      --accent-2:#06b6d4;
-      --bubble-user:#1f2937;
-      --bubble-ai:#0b1320;
-      --success:#10b981;
-      --danger:#ef4444;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    }
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,#07102a 0%, #061426 100%);color:#e6eef8}
-    .app {
-      max-width:980px;
-      margin:24px auto;
-      display:flex;
-      flex-direction:column;
-      gap:16px;
-      padding:20px;
+    :root {
+      --bg: #f9fafb;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+      --accent: #3b82f6;
+      --bubble-user: #e0ecff;
+      --bubble-ai: #f3f4f6;
+
+      font-family: "Inter", system-ui, sans-serif;
     }
 
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border-radius:14px;
-      box-shadow: 0 6px 24px rgba(2,6,23,0.6);
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      min-height:640px;
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
     }
 
-    header.top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:18px 20px;
-      border-bottom:1px solid rgba(255,255,255,0.03);
-    }
-    .brand{
-      display:flex;
-      gap:12px;
-      align-items:center;
-    }
-    .logo{
-      width:44px;height:44px;border-radius:10px;display:grid;place-items:center;
-      background:linear-gradient(135deg,var(--accent),var(--accent-2));
-      font-weight:700;color:white;font-size:18px;
-      box-shadow: 0 6px 18px rgba(79,70,229,0.18);
-    }
-    h1{font-size:18px;margin:0}
-    p.subtitle{margin:0;color:var(--muted);font-size:13px}
-
-    .controls{
-      display:flex;
-      gap:8px;
-      align-items:center;
-    }
-    button.btn{
-      background:transparent;border:1px solid rgba(255,255,255,0.05);
-      color:var(--muted);padding:8px 12px;border-radius:10px;font-weight:600;
-      cursor:pointer;font-size:13px;
-    }
-    button.btn.primary{
-      background:linear-gradient(90deg,var(--accent),var(--accent-2));
-      color:white;border:none;box-shadow:0 8px 24px rgba(79,70,229,0.18)
+    .container {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      background: var(--card);
     }
 
-    main.chat-area{
-      display:flex;flex-direction:column;gap:12px;padding:18px 20px;flex:1;overflow:auto;
-    }
-    .messages{display:flex;flex-direction:column;gap:12px;max-width:100%}
-    .meta{
-      color:var(--muted);font-size:13px;margin-bottom:6px;
+    /* HEADER */
+    header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
-    .bubble{
-      max-width:82%;
-      padding:12px 14px;border-radius:12px;color:#e6eef8;
-      line-height:1.45;font-size:14px;
-      box-shadow: 0 4px 12px rgba(2,6,23,0.5);
-      white-space:pre-wrap;
-      word-break:break-word;
+    .brand {
+      font-weight: 600;
+      font-size: 18px;
     }
-    .row{display:flex;gap:12px;align-items:flex-end}
-    .user{align-self:flex-end}
-    .user .bubble{background:var(--bubble-user);border-radius:12px 12px 10px 12px}
-    .ai{align-self:flex-start;display:flex;gap:12px}
-    .ai .avatar{
-      width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
-      display:grid;place-items:center;font-weight:700;color:white;font-size:13px;
+
+    /* CHAT AREA */
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
-    .ai .bubble{background:var(--bubble-ai);border-radius:12px 12px 12px 6px}
 
-    .input-bar{
-      display:flex;gap:10px;padding:14px;border-top:1px solid rgba(255,255,255,0.03);
-      align-items:center;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+    .msg {
+      max-width: 80%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      line-height: 1.5;
+      font-size: 15px;
+      white-space: pre-wrap;
     }
-    .input-bar textarea{
-      flex:1;min-height:44px;max-height:140px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);
-      background:transparent;color:inherit;font-size:14px;resize:none;
+
+    .user {
+      align-self: flex-end;
+      background: var(--bubble-user);
+      border-bottom-right-radius: 4px;
     }
-    .small{font-size:12px;color:var(--muted)}
-    .status{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
 
-    .typing{
-      display:inline-block;height:10px;width:30px;
+    .ai {
+      align-self: flex-start;
+      background: var(--bubble-ai);
+      border-bottom-left-radius: 4px;
     }
-    /* simple dot animation */
-    .typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);margin:0 2px;opacity:0.15;animation:blink 900ms infinite}
-    .typing span:nth-child(1){animation-delay:0ms}
-    .typing span:nth-child(2){animation-delay:150ms}
-    .typing span:nth-child(3){animation-delay:300ms}
-    @keyframes blink{0%{opacity:0.15}50%{opacity:1}100%{opacity:0.15}}
 
-    .actions{display:flex;gap:8px;align-items:center}
-    .muted-note{color:var(--muted);font-size:12px;padding:0 18px 10px}
+    /* INPUT BAR */
+    .input-area {
+      padding: 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      background: #fff;
+    }
 
-    footer.footer{padding:12px 18px;color:var(--muted);font-size:13px;border-top:1px solid rgba(255,255,255,0.02);display:flex;justify-content:space-between;align-items:center}
+    textarea {
+      flex: 1;
+      min-height: 42px;
+      max-height: 140px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      resize: none;
+      font-size: 14px;
+      outline: none;
+    }
 
-    /* responsive */
-    @media (max-width:640px){
-      .app{padding:12px}
-      .card{min-height:70vh}
-      .logo{width:40px;height:40px}
+    button {
+      padding: 0 18px;
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        border: none;
+      }
+      #messages {
+        padding: 12px;
+      }
     }
   </style>
 </head>
+
 <body>
-  <div class="app">
-    <div class="card" role="application" aria-label="CFO Bot chat">
-      <header class="top">
-        <div class="brand">
-          <div class="logo" aria-hidden="true">CF</div>
-          <div>
-            <h1>CFO Bot</h1>
-            <p class="subtitle">Ask about the Global Financial Architecture assignment</p>
-          </div>
-        </div>
+  <div class="container">
+    <header>
+      <div class="brand">CFO Bot</div>
+      <div id="backendStatus" style="font-size:12px; color:var(--muted)">Checking…</div>
+    </header>
 
-        <div class="controls" aria-hidden="false">
-          <div class="status small" id="connectionStatus">Backend: <span id="backendStatus">Checking…</span></div>
-          <div class="actions">
-            <button class="btn" id="btnCopy" title="Copy last reply">Copy</button>
-            <button class="btn" id="btnDownload" title="Download transcript">Download</button>
-            <button class="btn" id="btnClear" title="Clear conversation">Clear</button>
-          </div>
-        </div>
-      </header>
+    <div id="messages"></div>
 
-      <main class="chat-area" id="chatArea" role="main">
-        <div class="meta muted-note">
-          Deployed backend: <a href="https://shakeel401-cfo-bot-agent.hf.space/" target="_blank" rel="noreferrer" style="color:inherit; text-decoration:underline">shakeel401-cfo-bot-agent.hf.space</a>
-        </div>
-
-        <div class="messages" id="messages" aria-live="polite" aria-atomic="false">
-          <!-- messages injected here -->
-        </div>
-
-        <div class="input-bar" role="region" aria-label="Message input">
-          <textarea id="input" placeholder="Type your question about the assignment and press Enter (Shift+Enter for newline)..." aria-label="Message"></textarea>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <button class="btn primary" id="sendBtn" aria-label="Send message">Send</button>
-            <div class="small" style="text-align:right"><span id="tokenNote"></span></div>
-          </div>
-        </div>
-      </main>
-
-      <footer class="footer">
-        <div>Tip: Ask specific questions like “Explain liquidity flow from Korea to Luxembourg”</div>
-        <div class="small">Made for case study • Secure — no API keys in browser</div>
-      </footer>
+    <div class="input-area">
+      <textarea id="input" placeholder="Type your message…"></textarea>
+      <button id="sendBtn">Send</button>
     </div>
   </div>
 
-  <script>
-    // Configuration
-    const BACKEND = 'https://shakeel401-cfo-bot-agent.hf.space/query';
-    const STORAGE_KEY = 'cfo_bot_thread_id';
-    const TRANSCRIPT_KEY = 'cfo_bot_transcript';
+<script>
+  const BACKEND = "https://shakeel401-cfo-bot-agent.hf.space/query";
+  const messages = document.getElementById("messages");
+  const input = document.getElementById("input");
+  const sendBtn = document.getElementById("sendBtn");
+  const backendStatus = document.getElementById("backendStatus");
 
-    // Elements
-    const inputEl = document.getElementById('input');
-    const sendBtn = document.getElementById('sendBtn');
-    const messagesEl = document.getElementById('messages');
-    const backendStatusEl = document.getElementById('backendStatus');
-    const btnClear = document.getElementById('btnClear');
-    const btnCopy = document.getElementById('btnCopy');
-    const btnDownload = document.getElementById('btnDownload');
+  function addMessage(text, role) {
+    const div = document.createElement("div");
+    div.className = "msg " + role;
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
 
-    // transcript array {role:'user'|'assistant', text, time}
-    let transcript = JSON.parse(localStorage.getItem(TRANSCRIPT_KEY) || '[]');
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
 
-    // Ensure thread id
-    function getThreadId(){
-      let id = localStorage.getItem(STORAGE_KEY);
-      if(!id){
-        id = 'thread-' + cryptoRandomId();
-        localStorage.setItem(STORAGE_KEY, id);
-      }
-      return id;
+    addMessage(text, "user");
+    input.value = "";
+
+    backendStatus.textContent = "Thinking…";
+
+    try {
+      addMessage("…", "ai");
+      const thinkingBubble = messages.lastChild;
+
+      const res = await fetch(BACKEND, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({query: text, thread_id: "t1"})
+      });
+
+      const data = await res.json();
+      thinkingBubble.remove();
+      addMessage(data.output || "No response", "ai");
+
+      backendStatus.textContent = "Online";
+    } 
+    catch (err) {
+      backendStatus.textContent = "Error";
+      addMessage("Error: " + err.message, "ai");
     }
+  }
 
-    // small secure random id
-    function cryptoRandomId(){
-      return Array.from(crypto.getRandomValues(new Uint8Array(12)))
-        .map(b => b.toString(16).padStart(2,'0')).join('');
+  sendBtn.addEventListener("click", sendMessage);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
+  });
 
-    // Render transcript on load
-    function renderTranscript(){
-      messagesEl.innerHTML = '';
-      for(const item of transcript){
-        appendMessage(item.role, item.text, item.time, false);
-      }
-      // scroll to bottom
-      messagesEl.scrollTop = messagesEl.scrollHeight;
+  // Initial backend check
+  (async () => {
+    try {
+      await fetch(BACKEND, {method: "POST"});
+      backendStatus.textContent = "Online";
+    } catch {
+      backendStatus.textContent = "Offline";
+      backendStatus.style.color = "red";
     }
+  })();
+</script>
 
-    function appendMessage(role, text, time = Date.now(), scroll=true){
-      const row = document.createElement('div');
-      row.className = role === 'user' ? 'row user' : 'ai';
-
-      if(role !== 'user'){
-        // avatar
-        const avatar = document.createElement('div');
-        avatar.className = 'avatar';
-        avatar.textContent = 'CF';
-        row.appendChild(avatar);
-      }
-
-      const bubble = document.createElement('div');
-      bubble.className = 'bubble';
-      bubble.textContent = text;
-      row.appendChild(bubble);
-
-      messagesEl.appendChild(row);
-      if(scroll) messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-
-    // Typing indicator
-    let typingEl = null;
-    function showTyping(){
-      if(typingEl) return;
-      typingEl = document.createElement('div');
-      typingEl.className = 'ai';
-      const avatar = document.createElement('div');
-      avatar.className = 'avatar';
-      avatar.textContent = 'CF';
-      const bubble = document.createElement('div');
-      bubble.className = 'bubble';
-      bubble.innerHTML = '<span class="typing"><span></span><span></span><span></span></span> Thinking...';
-      typingEl.appendChild(avatar);
-      typingEl.appendChild(bubble);
-      messagesEl.appendChild(typingEl);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-    function hideTyping(){
-      if(typingEl){
-        typingEl.remove();
-        typingEl = null;
-      }
-    }
-
-    // Send message to backend
-    async function sendMessage(text){
-      const trimmed = text.trim();
-      if(!trimmed) return;
-      const thread_id = getThreadId();
-
-      // Save user message
-      const userItem = {role:'user', text: trimmed, time: Date.now()};
-      transcript.push(userItem);
-      localStorage.setItem(TRANSCRIPT_KEY, JSON.stringify(transcript));
-      appendMessage('user', trimmed);
-      inputEl.value = '';
-      inputEl.focus();
-
-      // Request
-      showTyping();
-      updateBackendStatus('Working…');
-
-      try{
-        const res = await fetch(BACKEND, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json', 'Accept':'application/json'},
-          body: JSON.stringify({query: trimmed, thread_id})
-        });
-
-        if(!res.ok){
-          // try to parse json error
-          const err = await res.json().catch(()=>null);
-          const errMsg = err?.detail || (err?.error?.message) || `Request failed: ${res.status}`;
-          throw new Error(errMsg);
-        }
-
-        const data = await res.json();
-        const output = data.output || 'No response.';
-        const aiItem = {role:'assistant', text: output, time: Date.now()};
-        transcript.push(aiItem);
-        localStorage.setItem(TRANSCRIPT_KEY, JSON.stringify(transcript));
-
-        hideTyping();
-        appendMessage('assistant', output);
-        updateBackendStatus('Ready');
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-      }catch(err){
-        hideTyping();
-        const msg = `Error: ${err.message || err}`;
-        const aiItem = {role:'assistant', text: msg, time: Date.now()};
-        transcript.push(aiItem);
-        localStorage.setItem(TRANSCRIPT_KEY, JSON.stringify(transcript));
-        appendMessage('assistant', msg);
-        updateBackendStatus('Error', true);
-      }
-    }
-
-    // update backend status display
-    function updateBackendStatus(text, isError=false){
-      backendStatusEl.textContent = text;
-      backendStatusEl.style.color = isError ? 'var(--danger)' : 'var(--muted)';
-    }
-
-    // quick connectivity check
-    async function checkBackend(){
-      try{
-        // send a lightweight ping – using a harmless query
-        const res = await fetch(BACKEND, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json', 'Accept':'application/json'},
-          body: JSON.stringify({query: 'hi', thread_id: getThreadId()})
-        });
-        if(!res.ok) throw new Error('unreachable');
-        const data = await res.json();
-        if(data?.output) updateBackendStatus('Ready');
-        else updateBackendStatus('Ready');
-      }catch(e){
-        updateBackendStatus('Unavailable', true);
-      }
-    }
-
-    // copy last assistant reply
-    btnCopy.addEventListener('click', () => {
-      // find last assistant in transcript
-      for(let i = transcript.length -1; i>=0; i--){
-        if(transcript[i].role === 'assistant'){
-          navigator.clipboard.writeText(transcript[i].text || '').then(()=> {
-            updateBackendStatus('Copied');
-            setTimeout(()=> updateBackendStatus('Ready'), 1200);
-          }).catch(()=> updateBackendStatus('Copy failed', true));
-          return;
-        }
-      }
-      updateBackendStatus('No reply to copy', true);
-      setTimeout(()=> updateBackendStatus('Ready'), 1200);
-    });
-
-    // download transcript as JSON
-    btnDownload.addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(transcript, null, 2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `cfo-bot-transcript-${new Date().toISOString()}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      updateBackendStatus('Downloaded');
-      setTimeout(()=> updateBackendStatus('Ready'), 900);
-    });
-
-    // clear conversation
-    btnClear.addEventListener('click', () => {
-      if(!confirm('Clear conversation? This cannot be undone.')) return;
-      transcript = [];
-      localStorage.removeItem(TRANSCRIPT_KEY);
-      messagesEl.innerHTML = '';
-      updateBackendStatus('Cleared');
-      setTimeout(()=> updateBackendStatus('Ready'), 700);
-    });
-
-    // Send on click or Enter
-    sendBtn.addEventListener('click', () => sendMessage(inputEl.value));
-    inputEl.addEventListener('keydown', (e) => {
-      if(e.key === 'Enter' && !e.shiftKey){
-        e.preventDefault();
-        sendMessage(inputEl.value);
-      }
-    });
-
-    // initial render
-    renderTranscript();
-    checkBackend();
-
-    // expose for debugging in console
-    window.CFO_TRANSCRIPT = transcript;
-    window.CFO_THREAD_ID = getThreadId();
-  </script>
 </body>
 </html>
