@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CFO Bot</title>
 
+  <!-- Favicon -->
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/4712/4712100.png" />
+
   <!-- Markdown Renderer -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
@@ -15,8 +18,8 @@
       --card: #ffffff;
       --border: #e5e7eb;
       --text: #111827;
-      --muted: #6b7280;
       --accent: #2563eb;
+      --muted: #6b7280;
       --bubble-user: #dbeafe;
       --bubble-ai: #f1f5f9;
 
@@ -45,27 +48,29 @@
     /* HEADER */
     header {
       padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
+      background: linear-gradient(90deg, #1e3a8a, #2563eb);
+      color: white;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      background: #ffffffd8;
-      backdrop-filter: blur(6px);
+      gap: 12px;
       position: sticky;
       top: 0;
       z-index: 10;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    header img {
+      width: 26px;
+      height: 26px;
     }
 
     .brand {
       font-size: 19px;
       font-weight: 600;
+      letter-spacing: 0.5px;
     }
 
-    #backendStatus {
-      font-size: 13px;
-    }
-
-    /* CHAT AREA */
+    /* CHAT */
     #messages {
       flex: 1;
       overflow-y: auto;
@@ -79,8 +84,8 @@
       max-width: 78%;
       padding: 12px 14px;
       border-radius: 14px;
-      line-height: 1.55;
       font-size: 15px;
+      line-height: 1.55;
       white-space: pre-wrap;
     }
 
@@ -96,17 +101,19 @@
       border-bottom-left-radius: 4px;
     }
 
-    .ai .markdown {
-      font-size: 15px;
+    .typing {
+      font-size: 22px;
+      margin-left: 6px;
     }
 
-    /* INPUT */
+    /* INPUT AREA */
     .input-area {
-      padding: 14px;
+      padding: 12px;
       border-top: 1px solid var(--border);
       display: flex;
+      align-items: flex-end;
       gap: 10px;
-      background: #ffffff;
+      background: white;
     }
 
     textarea {
@@ -115,38 +122,28 @@
       padding: 10px 12px;
       border-radius: 10px;
       border: 1px solid var(--border);
-      resize: none;
       outline: none;
-      min-height: 44px;
-      max-height: 140px;
+      resize: none;
+      min-height: 46px;
+      max-height: 130px;
     }
 
-    button {
-      padding: 0 20px;
-      border: none;
-      border-radius: 10px;
+    /* Minimal round send button */
+    .sendBtn {
+      width: 44px;
+      height: 44px;
       background: var(--accent);
-      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 15px;
+      border: none;
     }
 
-    /* TYPING DOTS */
-    .typing {
-      display: inline-block;
-      font-size: 20px;
-      letter-spacing: 2px;
-      margin-left: 5px;
-    }
-
-    @media (max-width: 640px) {
-      .container {
-        border: none;
-      }
-      #messages {
-        padding: 16px;
-      }
+    .sendBtn img {
+      width: 20px;
+      filter: brightness(0) invert(1);
     }
   </style>
 </head>
@@ -155,18 +152,22 @@
 
   <div class="container">
 
+    <!-- HEADER -->
     <header>
+      <img src="https://cdn-icons-png.flaticon.com/512/4712/4712100.png" alt="bot">
       <div class="brand">CFO Bot</div>
-      <div id="backendStatus" style="color:var(--muted)">Checking…</div>
     </header>
 
-    <!-- CHAT MESSAGES -->
+    <!-- CHAT WINDOW -->
     <div id="messages"></div>
 
-    <!-- INPUT -->
+    <!-- INPUT AREA -->
     <div class="input-area">
-      <textarea id="input" placeholder="Type your question…"></textarea>
-      <button id="sendBtn">Send</button>
+      <textarea id="input" placeholder="Type your question and press Enter…"></textarea>
+
+      <button class="sendBtn" id="sendBtn">
+        <img src="https://cdn-icons-png.flaticon.com/512/736/736212.png" />
+      </button>
     </div>
 
   </div>
@@ -176,25 +177,16 @@
     const messages = document.getElementById("messages");
     const input = document.getElementById("input");
     const sendBtn = document.getElementById("sendBtn");
-    const backendStatus = document.getElementById("backendStatus");
 
-    /* Add message bubble */
     function addMessage(text, role, markdown = false) {
       const div = document.createElement("div");
       div.className = "msg " + role;
-
-      if (markdown) {
-        div.innerHTML = `<div class="markdown">${marked.parse(text)}</div>`;
-      } else {
-        div.textContent = text;
-      }
-
+      div.innerHTML = markdown ? `<div class="markdown">${marked.parse(text)}</div>` : text;
       messages.appendChild(div);
       messages.scrollTop = messages.scrollHeight;
       return div;
     }
 
-    /* Typing Animation */
     function addTypingBubble() {
       const div = document.createElement("div");
       div.className = "msg ai";
@@ -204,7 +196,6 @@
       return div;
     }
 
-    /* Send Message */
     async function sendMessage() {
       const text = input.value.trim();
       if (!text) return;
@@ -213,7 +204,6 @@
       input.value = "";
 
       const typingBubble = addTypingBubble();
-      backendStatus.textContent = "Thinking…";
 
       try {
         const res = await fetch(BACKEND, {
@@ -224,18 +214,14 @@
 
         const data = await res.json();
         typingBubble.remove();
-
         addMessage(data.output || "No response", "ai", true);
-        backendStatus.textContent = "Online";
 
       } catch (err) {
         typingBubble.remove();
-        backendStatus.textContent = "Error";
         addMessage("❌ Error: " + err.message, "ai");
       }
     }
 
-    /* Events */
     sendBtn.addEventListener("click", sendMessage);
 
     input.addEventListener("keydown", (e) => {
@@ -247,27 +233,11 @@
 
     /* Welcome message */
     addMessage(
-      "**👋 Welcome to CFO Bot!**\n\nI am your AI Chief Financial Officer.  
-Ask me anything about your global financial architecture, tax compliance, liquidity flows, or the structure you are designing.",
+      "**👋 Welcome to CFO Bot!**\n\nI help you design Global Financial Architecture, manage compliance, tax flows, treasury operations & more.  
+Type your question anytime.",
       "ai",
       true
     );
-
-    /* Backend health check */
-    (async () => {
-      try {
-        await fetch(BACKEND, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: "health-check", thread_id: "check" })
-          });
-        backendStatus.textContent = "Online";
-        backendStatus.style.color = "green";
-      } catch {
-        backendStatus.textContent = "Offline";
-        backendStatus.style.color = "red";
-      }
-    })();
   </script>
 
 </body>
