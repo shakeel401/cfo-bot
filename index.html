@@ -33,11 +33,11 @@
       height: 100vh;
     }
 
-    /* FIXED FULL SCREEN CHATBOT CONTAINER */
+    /* FULL SCREEN CHAT CONTAINER */
     .container {
       width: 100%;
       max-width: 760px;
-      height: 100vh;             /* FULL HEIGHT */
+      height: 100vh;
       background: var(--card);
       display: flex;
       flex-direction: column;
@@ -83,6 +83,7 @@
       font-size: 15px;
       line-height: 1.55;
       white-space: pre-wrap;
+      position: relative;
       animation: fadeIn 0.2s ease-out;
     }
 
@@ -98,9 +99,24 @@
       border-bottom-left-radius: 6px;
     }
 
+    /* Timestamp */
+    .timestamp {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 4px;
+      display: block;
+    }
+
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* Spinner */
@@ -114,7 +130,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     /* Input Area */
@@ -122,7 +140,7 @@
       padding: 14px 18px;
       border-top: 1px solid var(--border);
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       gap: 12px;
       background: white;
     }
@@ -151,7 +169,6 @@
       align-items: center;
       cursor: pointer;
       transition: 0.15s;
-      margin-bottom: 3px;
     }
 
     .sendBtn:hover {
@@ -197,22 +214,43 @@
       const input = document.getElementById("input");
       const sendBtn = document.getElementById("sendBtn");
 
+      function getTimestamp() {
+        const now = new Date();
+        return now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      }
+
       function addMessage(text, role, markdown = false) {
+        const wrapper = document.createElement("div");
+
         const div = document.createElement("div");
         div.className = "msg " + role;
         div.innerHTML = markdown ? marked.parse(text) : text;
-        messages.appendChild(div);
+
+        const time = document.createElement("span");
+        time.className = "timestamp";
+        time.textContent = getTimestamp();
+
+        wrapper.appendChild(div);
+        wrapper.appendChild(time);
+
+        messages.appendChild(wrapper);
         messages.scrollTop = messages.scrollHeight;
-        return div;
+
+        return wrapper;
       }
 
       function addSpinner() {
+        const wrapper = document.createElement("div");
+
         const div = document.createElement("div");
         div.className = "msg ai";
         div.innerHTML = `<div class="spinner"></div>`;
-        messages.appendChild(div);
+
+        wrapper.appendChild(div);
+        messages.appendChild(wrapper);
         messages.scrollTop = messages.scrollHeight;
-        return div;
+
+        return wrapper;
       }
 
       async function sendMessage() {
@@ -250,14 +288,16 @@
         }
       });
 
-      /* Short Welcome Message */
+      /* Enhanced Welcome Message */
       addMessage(
-        "**👋 Welcome to CFO Bot!**\n\nAsk anything about global financial architecture, tax design, or entity flows.",
+        "**👋 Welcome to CFO Bot!**\n\nI assist with global financial structure design, intercompany flows, tax planning, treasury operations, and compliance strategy.\n\nHow can I support you today?",
         "ai",
         true
       );
+
     });
   </script>
 
 </body>
+
 </html>
