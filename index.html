@@ -1,20 +1,24 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CFO Bot</title>
 
+  <!-- Markdown Renderer -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
   <style>
     :root {
-      --bg: #f9fafb;
+      --bg: #f3f4f6;
       --card: #ffffff;
       --border: #e5e7eb;
       --text: #111827;
       --muted: #6b7280;
-      --accent: #3b82f6;
-      --bubble-user: #e0ecff;
-      --bubble-ai: #f3f4f6;
+      --accent: #2563eb;
+      --bubble-user: #dbeafe;
+      --bubble-ai: #f1f5f9;
 
       font-family: "Inter", system-ui, sans-serif;
     }
@@ -22,7 +26,6 @@
     body {
       margin: 0;
       background: var(--bg);
-      color: var(--text);
       display: flex;
       justify-content: center;
       min-height: 100vh;
@@ -30,44 +33,53 @@
 
     .container {
       width: 100%;
-      max-width: 720px;
+      max-width: 760px;
       display: flex;
       flex-direction: column;
       height: 100vh;
+      background: var(--card);
       border-left: 1px solid var(--border);
       border-right: 1px solid var(--border);
-      background: var(--card);
     }
 
     /* HEADER */
     header {
-      padding: 14px 18px;
+      padding: 16px 20px;
       border-bottom: 1px solid var(--border);
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
+      background: #ffffffd8;
+      backdrop-filter: blur(6px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .brand {
+      font-size: 19px;
       font-weight: 600;
-      font-size: 18px;
+    }
+
+    #backendStatus {
+      font-size: 13px;
     }
 
     /* CHAT AREA */
     #messages {
       flex: 1;
       overflow-y: auto;
-      padding: 18px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 16px;
     }
 
     .msg {
-      max-width: 80%;
+      max-width: 78%;
       padding: 12px 14px;
-      border-radius: 12px;
-      line-height: 1.5;
+      border-radius: 14px;
+      line-height: 1.55;
       font-size: 15px;
       white-space: pre-wrap;
     }
@@ -84,35 +96,48 @@
       border-bottom-left-radius: 4px;
     }
 
-    /* INPUT BAR */
+    .ai .markdown {
+      font-size: 15px;
+    }
+
+    /* INPUT */
     .input-area {
       padding: 14px;
       border-top: 1px solid var(--border);
       display: flex;
       gap: 10px;
-      background: #fff;
+      background: #ffffff;
     }
 
     textarea {
       flex: 1;
-      min-height: 42px;
-      max-height: 140px;
+      font-size: 15px;
       padding: 10px 12px;
       border-radius: 10px;
       border: 1px solid var(--border);
       resize: none;
-      font-size: 14px;
       outline: none;
+      min-height: 44px;
+      max-height: 140px;
     }
 
     button {
-      padding: 0 18px;
+      padding: 0 20px;
       border: none;
       border-radius: 10px;
       background: var(--accent);
       color: #fff;
       cursor: pointer;
       font-weight: 600;
+      font-size: 15px;
+    }
+
+    /* TYPING DOTS */
+    .typing {
+      display: inline-block;
+      font-size: 20px;
+      letter-spacing: 2px;
+      margin-left: 5px;
     }
 
     @media (max-width: 640px) {
@@ -120,92 +145,126 @@
         border: none;
       }
       #messages {
-        padding: 12px;
+        padding: 16px;
       }
     }
   </style>
 </head>
 
 <body>
+
   <div class="container">
+
     <header>
       <div class="brand">CFO Bot</div>
-      <div id="backendStatus" style="font-size:12px; color:var(--muted)">Checking…</div>
+      <div id="backendStatus" style="color:var(--muted)">Checking…</div>
     </header>
 
+    <!-- CHAT MESSAGES -->
     <div id="messages"></div>
 
+    <!-- INPUT -->
     <div class="input-area">
-      <textarea id="input" placeholder="Type your message…"></textarea>
+      <textarea id="input" placeholder="Type your question…"></textarea>
       <button id="sendBtn">Send</button>
     </div>
+
   </div>
 
-<script>
-  const BACKEND = "https://shakeel401-cfo-bot-agent.hf.space/query";
-  const messages = document.getElementById("messages");
-  const input = document.getElementById("input");
-  const sendBtn = document.getElementById("sendBtn");
-  const backendStatus = document.getElementById("backendStatus");
+  <script>
+    const BACKEND = "https://shakeel401-cfo-bot-agent.hf.space/query";
+    const messages = document.getElementById("messages");
+    const input = document.getElementById("input");
+    const sendBtn = document.getElementById("sendBtn");
+    const backendStatus = document.getElementById("backendStatus");
 
-  function addMessage(text, role) {
-    const div = document.createElement("div");
-    div.className = "msg " + role;
-    div.textContent = text;
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
-  }
+    /* Add message bubble */
+    function addMessage(text, role, markdown = false) {
+      const div = document.createElement("div");
+      div.className = "msg " + role;
 
-  async function sendMessage() {
-    const text = input.value.trim();
-    if (!text) return;
+      if (markdown) {
+        div.innerHTML = `<div class="markdown">${marked.parse(text)}</div>`;
+      } else {
+        div.textContent = text;
+      }
 
-    addMessage(text, "user");
-    input.value = "";
-
-    backendStatus.textContent = "Thinking…";
-
-    try {
-      addMessage("…", "ai");
-      const thinkingBubble = messages.lastChild;
-
-      const res = await fetch(BACKEND, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({query: text, thread_id: "t1"})
-      });
-
-      const data = await res.json();
-      thinkingBubble.remove();
-      addMessage(data.output || "No response", "ai");
-
-      backendStatus.textContent = "Online";
-    } 
-    catch (err) {
-      backendStatus.textContent = "Error";
-      addMessage("Error: " + err.message, "ai");
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+      return div;
     }
-  }
 
-  sendBtn.addEventListener("click", sendMessage);
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+    /* Typing Animation */
+    function addTypingBubble() {
+      const div = document.createElement("div");
+      div.className = "msg ai";
+      div.innerHTML = `<span class="typing">•••</span>`;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+      return div;
     }
-  });
 
-  // Initial backend check
-  (async () => {
-    try {
-      await fetch(BACKEND, {method: "POST"});
-      backendStatus.textContent = "Online";
-    } catch {
-      backendStatus.textContent = "Offline";
-      backendStatus.style.color = "red";
+    /* Send Message */
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      addMessage(text, "user");
+      input.value = "";
+
+      const typingBubble = addTypingBubble();
+      backendStatus.textContent = "Thinking…";
+
+      try {
+        const res = await fetch(BACKEND, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: text, thread_id: "t1" }),
+        });
+
+        const data = await res.json();
+        typingBubble.remove();
+
+        addMessage(data.output || "No response", "ai", true);
+        backendStatus.textContent = "Online";
+
+      } catch (err) {
+        typingBubble.remove();
+        backendStatus.textContent = "Error";
+        addMessage("❌ Error: " + err.message, "ai");
+      }
     }
-  })();
-</script>
+
+    /* Events */
+    sendBtn.addEventListener("click", sendMessage);
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    /* Welcome message */
+    addMessage(
+      "**👋 Welcome to CFO Bot!**\n\nI am your AI Chief Financial Officer.  
+Ask me anything about your global financial architecture, tax compliance, liquidity flows, or the structure you are designing.",
+      "ai",
+      true
+    );
+
+    /* Backend health check */
+    (async () => {
+      try {
+        await fetch(BACKEND, { method: "POST" });
+        backendStatus.textContent = "Online";
+        backendStatus.style.color = "green";
+      } catch {
+        backendStatus.textContent = "Offline";
+        backendStatus.style.color = "red";
+      }
+    })();
+  </script>
 
 </body>
 </html>
