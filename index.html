@@ -14,12 +14,11 @@
 
   <style>
     :root {
-      --bg: #f3f4f6;
+      --bg: #eef1f5;
       --card: #ffffff;
-      --border: #e5e7eb;
+      --border: #d8dde3;
       --text: #111827;
       --accent: #2563eb;
-      --muted: #6b7280;
       --bubble-user: #dbeafe;
       --bubble-ai: #f1f5f9;
 
@@ -32,6 +31,7 @@
       display: flex;
       justify-content: center;
       min-height: 100vh;
+      padding: 20px 0;
     }
 
     .container {
@@ -39,102 +39,125 @@
       max-width: 760px;
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      height: calc(100vh - 40px);
       background: var(--card);
-      border-left: 1px solid var(--border);
-      border-right: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+      border: 1px solid var(--border);
     }
 
+    /* Header */
     header {
-      padding: 16px 20px;
+      padding: 18px 22px;
       background: linear-gradient(90deg, #1e3a8a, #2563eb);
       color: white;
       display: flex;
       align-items: center;
-      gap: 12px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      gap: 14px;
     }
 
     header img {
-      width: 26px;
-      height: 26px;
+      width: 30px;
+      height: 30px;
     }
 
     .brand {
-      font-size: 19px;
+      font-size: 20px;
       font-weight: 600;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
     }
 
+    /* Chat window */
     #messages {
       flex: 1;
       overflow-y: auto;
-      padding: 20px;
+      padding: 28px 22px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 18px;
     }
 
     .msg {
-      max-width: 78%;
-      padding: 12px 14px;
+      max-width: 75%;
+      padding: 12px 16px;
       border-radius: 14px;
       font-size: 15px;
       line-height: 1.55;
       white-space: pre-wrap;
+      animation: fadeIn 0.2s ease-out;
     }
 
     .user {
       align-self: flex-end;
       background: var(--bubble-user);
-      border-bottom-right-radius: 4px;
+      border-bottom-right-radius: 6px;
     }
 
     .ai {
       align-self: flex-start;
       background: var(--bubble-ai);
-      border-bottom-left-radius: 4px;
+      border-bottom-left-radius: 6px;
     }
 
-    .typing {
-      font-size: 22px;
-      margin-left: 6px;
+    /* Spinner */
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid #d0d4d9;
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 4px 0;
     }
 
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Input area */
     .input-area {
-      padding: 12px;
+      padding: 14px 16px;
       border-top: 1px solid var(--border);
       display: flex;
-      align-items: flex-end;
-      gap: 10px;
+      align-items: center;
+      gap: 12px;
       background: white;
     }
 
     textarea {
       flex: 1;
-      font-size: 15px;
-      padding: 10px 12px;
-      border-radius: 10px;
+      font-size: 16px;
+      padding: 12px 14px;
+      border-radius: 12px;
       border: 1px solid var(--border);
       outline: none;
       resize: none;
-      min-height: 46px;
-      max-height: 130px;
+      min-height: 48px;
+      max-height: 150px;
     }
 
+    /* Send button */
     .sendBtn {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       background: var(--accent);
       border-radius: 50%;
+      border: none;
       display: flex;
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      border: none;
+      transition: 0.15s;
+    }
+
+    .sendBtn:hover {
+      transform: scale(1.05);
     }
 
     .sendBtn img {
@@ -148,15 +171,18 @@
 
   <div class="container">
 
+    <!-- HEADER -->
     <header>
       <img src="https://cdn-icons-png.flaticon.com/512/4712/4712100.png" alt="bot">
       <div class="brand">CFO Bot</div>
     </header>
 
+    <!-- CHAT -->
     <div id="messages"></div>
 
+    <!-- INPUT -->
     <div class="input-area">
-      <textarea id="input" placeholder="Type your question and press Enter…"></textarea>
+      <textarea id="input" placeholder="Type your question…"></textarea>
 
       <button class="sendBtn" id="sendBtn">
         <img src="https://cdn-icons-png.flaticon.com/512/736/736212.png" />
@@ -176,15 +202,16 @@
       function addMessage(text, role, markdown = false) {
         const div = document.createElement("div");
         div.className = "msg " + role;
-        div.innerHTML = markdown ? `<div class="markdown">${marked.parse(text)}</div>` : text;
+        div.innerHTML = markdown ? marked.parse(text) : text;
         messages.appendChild(div);
         messages.scrollTop = messages.scrollHeight;
+        return div;
       }
 
-      function addTypingBubble() {
+      function addSpinner() {
         const div = document.createElement("div");
         div.className = "msg ai";
-        div.innerHTML = `<span class="typing">•••</span>`;
+        div.innerHTML = `<div class="spinner"></div>`;
         messages.appendChild(div);
         messages.scrollTop = messages.scrollHeight;
         return div;
@@ -197,7 +224,7 @@
         addMessage(text, "user");
         input.value = "";
 
-        const typingBubble = addTypingBubble();
+        const loader = addSpinner();
 
         try {
           const res = await fetch(BACKEND, {
@@ -207,11 +234,11 @@
           });
 
           const data = await res.json();
-          typingBubble.remove();
+          loader.remove();
           addMessage(data.output || "No response", "ai", true);
 
         } catch (err) {
-          typingBubble.remove();
+          loader.remove();
           addMessage("❌ Error: " + err.message, "ai");
         }
       }
@@ -225,8 +252,9 @@
         }
       });
 
+      /* Short Welcome Message */
       addMessage(
-        "**👋 Welcome to CFO Bot!**\n\nI help you design Global Financial Architecture, tax flows, compliance, treasury operations, and more.\n\nAsk anything anytime.",
+        "**👋 Welcome to CFO Bot!**\nYour financial architecture assistant.\nHow can I help you today?",
         "ai",
         true
       );
