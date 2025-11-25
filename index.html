@@ -256,7 +256,11 @@ Ask me anything about your global financial architecture, tax compliance, liquid
     /* Backend health check */
     (async () => {
       try {
-        await fetch(BACKEND, { method: "POST" });
+        await fetch(BACKEND, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: "health-check", thread_id: "check" })
+          });
         backendStatus.textContent = "Online";
         backendStatus.style.color = "green";
       } catch {
