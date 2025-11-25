@@ -45,7 +45,6 @@
       border-right: 1px solid var(--border);
     }
 
-    /* HEADER */
     header {
       padding: 16px 20px;
       background: linear-gradient(90deg, #1e3a8a, #2563eb);
@@ -56,7 +55,7 @@
       position: sticky;
       top: 0;
       z-index: 10;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
 
     header img {
@@ -70,7 +69,6 @@
       letter-spacing: 0.5px;
     }
 
-    /* CHAT */
     #messages {
       flex: 1;
       overflow-y: auto;
@@ -106,7 +104,6 @@
       margin-left: 6px;
     }
 
-    /* INPUT AREA */
     .input-area {
       padding: 12px;
       border-top: 1px solid var(--border);
@@ -128,7 +125,6 @@
       max-height: 130px;
     }
 
-    /* Minimal round send button */
     .sendBtn {
       width: 44px;
       height: 44px;
@@ -152,16 +148,13 @@
 
   <div class="container">
 
-    <!-- HEADER -->
     <header>
       <img src="https://cdn-icons-png.flaticon.com/512/4712/4712100.png" alt="bot">
       <div class="brand">CFO Bot</div>
     </header>
 
-    <!-- CHAT WINDOW -->
     <div id="messages"></div>
 
-    <!-- INPUT AREA -->
     <div class="input-area">
       <textarea id="input" placeholder="Type your question and press Enter…"></textarea>
 
@@ -173,71 +166,72 @@
   </div>
 
   <script>
-    const BACKEND = "https://shakeel401-cfo-bot-agent.hf.space/query";
-    const messages = document.getElementById("messages");
-    const input = document.getElementById("input");
-    const sendBtn = document.getElementById("sendBtn");
+    document.addEventListener("DOMContentLoaded", () => {
 
-    function addMessage(text, role, markdown = false) {
-      const div = document.createElement("div");
-      div.className = "msg " + role;
-      div.innerHTML = markdown ? `<div class="markdown">${marked.parse(text)}</div>` : text;
-      messages.appendChild(div);
-      messages.scrollTop = messages.scrollHeight;
-      return div;
-    }
+      const BACKEND = "https://shakeel401-cfo-bot-agent.hf.space/query";
+      const messages = document.getElementById("messages");
+      const input = document.getElementById("input");
+      const sendBtn = document.getElementById("sendBtn");
 
-    function addTypingBubble() {
-      const div = document.createElement("div");
-      div.className = "msg ai";
-      div.innerHTML = `<span class="typing">•••</span>`;
-      messages.appendChild(div);
-      messages.scrollTop = messages.scrollHeight;
-      return div;
-    }
-
-    async function sendMessage() {
-      const text = input.value.trim();
-      if (!text) return;
-
-      addMessage(text, "user");
-      input.value = "";
-
-      const typingBubble = addTypingBubble();
-
-      try {
-        const res = await fetch(BACKEND, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: text, thread_id: "t1" }),
-        });
-
-        const data = await res.json();
-        typingBubble.remove();
-        addMessage(data.output || "No response", "ai", true);
-
-      } catch (err) {
-        typingBubble.remove();
-        addMessage("❌ Error: " + err.message, "ai");
+      function addMessage(text, role, markdown = false) {
+        const div = document.createElement("div");
+        div.className = "msg " + role;
+        div.innerHTML = markdown ? `<div class="markdown">${marked.parse(text)}</div>` : text;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
       }
-    }
 
-    sendBtn.addEventListener("click", sendMessage);
-
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
+      function addTypingBubble() {
+        const div = document.createElement("div");
+        div.className = "msg ai";
+        div.innerHTML = `<span class="typing">•••</span>`;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+        return div;
       }
+
+      async function sendMessage() {
+        const text = input.value.trim();
+        if (!text) return;
+
+        addMessage(text, "user");
+        input.value = "";
+
+        const typingBubble = addTypingBubble();
+
+        try {
+          const res = await fetch(BACKEND, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: text, thread_id: "t1" }),
+          });
+
+          const data = await res.json();
+          typingBubble.remove();
+          addMessage(data.output || "No response", "ai", true);
+
+        } catch (err) {
+          typingBubble.remove();
+          addMessage("❌ Error: " + err.message, "ai");
+        }
+      }
+
+      sendBtn.addEventListener("click", sendMessage);
+
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      addMessage(
+        "**👋 Welcome to CFO Bot!**\n\nI help you design Global Financial Architecture, tax flows, compliance, treasury operations, and more.\n\nAsk anything anytime.",
+        "ai",
+        true
+      );
+
     });
-
-    /* Welcome message */
-    addMessage(
-      "**👋 Welcome to CFO Bot!**\n\nI help you design Global Financial Architecture, manage compliance, tax flows, treasury operations & more.  
-Type your question anytime.",
-      "ai",
-      true
-    );
   </script>
 
 </body>
